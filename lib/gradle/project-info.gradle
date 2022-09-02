@@ -1,0 +1,39 @@
+// -----------------------------------------------------------------------------
+// publishing information
+// -----------------------------------------------------------------------------
+ext.publishingInfo.artifactId =  project.name.toLowerCase()
+ext.publishingInfo.groupId    =  'org.goemboec.svg2fx'
+ext.publishingInfo.versionId  =  ext.commonProps.get("publication.version")
+
+ext.publishingInfo.developerName         = 'Goemboec Enterprises'
+ext.publishingInfo.developerAlias        = 'GBE'
+ext.publishingInfo.developerEmail        = 'alexander.heusel@gmail.com'
+ext.publishingInfo.inceptionYear         = '2022'
+
+ext.publishingInfo.desc                  = 'svg2fx library.'
+ext.publishingInfo.license               = 'none'
+ext.publishingInfo.licenseUrl            = ''
+ext.publishingInfo.labels                = ['java', 'javafx', 'svg']
+ext.publishingInfo.websiteUrl            = ''
+ext.publishingInfo.issueTrackerUrl       = ''
+ext.publishingInfo.vcsUrl                = ''
+
+ext.publishingInfo.gitHubMavenRepo       = ""
+
+ext.publishingInfo.pomName               =  ext.publishingInfo.artifactId
+
+// -----------------------------------------------------------------------------
+// Sanity checks
+// -----------------------------------------------------------------------------
+if(ext.publishingInfo.artifactId == null)
+{
+    throw new RuntimeException("Artifact id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}
+if(ext.publishingInfo.groupId == null)
+{
+    throw new RuntimeException("Group id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}
+if(ext.publishingInfo.versionId == null)
+{
+    throw new RuntimeException("Version id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}

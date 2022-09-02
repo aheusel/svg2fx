@@ -1,0 +1,39 @@
+// -----------------------------------------------------------------------------
+// publishing information
+// -----------------------------------------------------------------------------
+ext.publishingInfo.artifactId =  project.name.toLowerCase()
+ext.publishingInfo.groupId    =  'com.biofluidix.libaux2'
+ext.publishingInfo.versionId  =  ext.commonProps.get("publication.version")
+
+ext.publishingInfo.developerName         = 'Biofluidix'
+ext.publishingInfo.developerAlias        = 'bfx'
+ext.publishingInfo.developerEmail        = 'info@biofluidix.com'
+ext.publishingInfo.inceptionYear         = '2022'
+
+ext.publishingInfo.desc                  = 'AUX2 JavaFX Rig.'
+ext.publishingInfo.license               = 'none'
+ext.publishingInfo.licenseUrl            = ''
+ext.publishingInfo.labels                = ['javafx', 'aux2', 'api', 'ui']
+ext.publishingInfo.websiteUrl            = 'www.biofluidix.com'
+ext.publishingInfo.issueTrackerUrl       = 'www.biofluidix.com'
+ext.publishingInfo.vcsUrl                = 'www.biofluidix.com'
+
+ext.publishingInfo.gitHubMavenRepo       = "www.biofluidix.com"
+
+ext.publishingInfo.pomName               =  ext.publishingInfo.artifactId
+
+// -----------------------------------------------------------------------------
+// Sanity checks
+// -----------------------------------------------------------------------------
+if(ext.publishingInfo.artifactId == null)
+{
+    throw new RuntimeException("Artifact id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}
+if(ext.publishingInfo.groupId == null)
+{
+    throw new RuntimeException("Group id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}
+if(ext.publishingInfo.versionId == null)
+{
+    throw new RuntimeException("Version id undefined in file \"project-info.gradle\" in project \"$project.name\".")
+}

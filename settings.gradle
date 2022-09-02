@@ -1,0 +1,10 @@
+rootProject.name = 'svg2fx'
+
+// Subproject folder names. ':' part separator.
+include ':app', ':lib'
+
+// Project aliases.
+project(":app").name = "ui-rig"
+project(":lib").name = "svg2fx"
+
+

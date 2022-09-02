@@ -1,0 +1,133 @@
+// -----------------------------------------------------------------------------
+// Collect publishing information
+// -----------------------------------------------------------------------------
+ext.publishingInfo = [:]
+
+ext.publishingInfo.pomName =  ext.publishingInfo.artifactId
+
+apply from: "gradle/project-info.gradle"
+apply plugin: 'signing'
+
+// -----------------------------------------------------------------------------
+// Performs publishing
+// -----------------------------------------------------------------------------
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier  = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// create one jar for the source files
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier  = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+Date buildTimeAndDate = new Date()
+ext {
+    buildDate = new java.text.SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+    buildTime = new java.text.SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+}
+
+jar {
+    manifest {
+        attributes(
+                'Built-By': System.properties['user.name'],
+                'Created-By': System.properties['java.version'] + " (" + System.properties['java.vendor'] + " " + System.properties['java.vm.version'] + ")",
+                'Build-Date': project.buildDate,
+                'Build-Time': project.buildTime,
+                'Build-Revision': versioning.info.commit,
+                'Specification-Title': project.name,
+                'Specification-Version': project.version,
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+
+def pomConfig = {
+    name ext.publishingInfo.pomName
+    description ext.publishingInfo.desc
+    url ext.publishingInfo.websiteUrl
+    inceptionYear ext.publishingInfo.inceptionYear
+    licenses {
+        license([:]) {
+            name ext.publishingInfo.license
+            url ext.publishingInfo.licenseUrl
+            distribution 'repo'
+        }
+    }
+    scm {
+        url ext.publishingInfo.vcsUrl
+        connection ext.publishingInfo.vcsUrl
+        developerConnection ext.publishingInfo.vcsUrl
+    }
+    developers {
+        developer {
+            id ext.publishingInfo.developerNameAlias
+            name ext.publishingInfo.developerName
+        }
+    }
+}
+
+
+
+publishing {
+
+    repositories {
+
+        // --------------------------------------------------------------------------------
+        // Destination Repository 'BuildDir'
+        // telling gradle to publish artifact to local directory
+        // -> call task 'publishMavenJavaPublicationToBuildDirRepository' to publish
+        // --------------------------------------------------------------------------------
+        maven {
+            name = "BuildDir"
+            url "file:/${buildDir}/artifacts"
+        }
+    }
+
+
+    publications {
+        mavenJava(MavenPublication) {
+            groupId publishingInfo.groupId
+            artifactId publishingInfo.artifactId
+            version publishingInfo.versionId
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode 'description', publishingInfo.desc
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+
+if(
+project.findProperty("signing.secretKeyRingFile")
+        && project.findProperty("signing.password")
+        && project.findProperty("signing.keyId")
+) {
+
+    signing {
+        sign publishing.publications
+    }
+
+} else {
+    println "> skipping signing, provide\n" +
+            "  - 'signing.secretKeyRingFile'\n" +
+            "  - 'signing.password'\n" +
+            "  - 'signing.keyId'\n" +
+            " to activate it\n"
+}

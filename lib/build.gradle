@@ -1,0 +1,64 @@
+// enable intellij integration & load vmf version to be used
+buildscript {
+
+    ext.commonProps = new Properties()
+    file(new File(rootProject.getRootDir(),"config/common.properties")).
+            withInputStream { {commonProps.load(it) }}
+
+    ext.vmfPluginIntelliJIntegration = true
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+
+}
+
+
+plugins {
+    id 'idea'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version "${plugin_version_javafx}"
+
+    id 'maven-publish'
+    id 'net.nemerosa.versioning' version "${plugin_version_versioning}"
+    id 'com.github.ben-manes.versions' version "${plugin_version_versions}"
+}
+
+apply from: 'gradle/publishing.gradle'
+
+
+javafx {
+    version "${project.commonProps.get('deps.javafx.version')}"
+    modules = [ 'javafx.base', 'javafx.graphics' ]
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url 'https://jitpack.io' }
+}
+
+[compileJava, compileTestJava]*.options*.release  = project.commonProps.get('deps.java.version') as Integer
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+
+    implementation 'batik:batik-svg-dom:1.6-1'
+    implementation 'batik:batik-css:1.6-1'
+    implementation 'batik:batik-bridge:1.6-1'
+    testImplementation 'junit:junit:4.13.2'
+
+    implementation "org.openjfx:javafx:${project.commonProps.get('deps.javafx.version')}"
+    implementation('com.google.guava:guava:31.1-jre')
+
+    implementation "org.tinylog:tinylog-api:2.4.1"
+    implementation "org.tinylog:tinylog-impl:2.4.1"
+
+}

@@ -1,5 +1,24 @@
-/lib/batik-1.7/docs/
-/lib/batik-1.7/samples/
-/build/
-/dist/
-/lib/batik-1.7/extensions/
+build
+.idea
+bin
+out
+.DS_Store
+.vscode
+.vscode-test
+.vscode-launch.json
+.settings
+.settings.json
+
+.gradle
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
