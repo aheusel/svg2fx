@@ -108,7 +108,6 @@ public class DefsBuilder implements DefsVisitor
         {
             ImagePattern imgPat = new ImagePattern(image, dx, dy, width, height, false);
             defs.put(id, imgPat);
-            //System.out.format("[ImagePattern] id: %s, x: %f, y: %f, width:%f, height: %f\n", id, imgPat.getX(), imgPat.getY(), imgPat.getWidth(), imgPat.getHeight());
         }
         
     }
@@ -128,10 +127,8 @@ public class DefsBuilder implements DefsVisitor
         
         byte[] newBytes = Base64.decode(base64Data);
                 
-        //Image img = new Image(new ByteArrayInputStream(newBytes), ie.getWidth().getBaseVal().getValue(), ie.getHeight().getBaseVal().getValue(), false, false);
         Image img = new Image(new ByteArrayInputStream(newBytes));
-        //System.out.format("[Image] width: %f , height %f, MiME-type: %s, length: %d, base64 starts with: %s...\n", img.getWidth(), img.getHeight(), mimeType, newBytes.length, base64Data.substring(0, 7));
-        
+
         return img;
     }
     

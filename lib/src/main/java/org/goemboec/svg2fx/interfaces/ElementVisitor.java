@@ -41,18 +41,20 @@ package org.goemboec.svg2fx.interfaces;
 
 import org.w3c.dom.svg.*;
 
+import java.util.Map;
+
 /**
  *
  * @author Alexander Heusel
  */
 public interface ElementVisitor
 {
-    public void visitSVGCircleElement(SVGCircleElement ce);
-    public void visitSVGEllipseElement(SVGEllipseElement ee);
-    public void visitSVGLineElement(SVGLineElement le);
-    public void visitSVGRectElement(SVGRectElement re);
-    public void visitSVGPolylineElement(SVGPolylineElement pe);
-    public void visitSVGPathElement(SVGPathElement pe);
-    public void visitSVGGElement(SVGGElement svgGroup);
-    public void visitSVGGElementClose(SVGGElement svgGroup);
+    public Map<String, String> visitSVGCircleElement(SVGCircleElement ce);
+    public Map<String, String> visitSVGEllipseElement(SVGEllipseElement ee);
+    public Map<String, String> visitSVGLineElement(SVGLineElement le);
+    public Map<String, String> visitSVGRectElement(SVGRectElement re);
+    public Map<String, String>  visitSVGPolylineElement(SVGPolylineElement pe);
+    public Map<String, String>  visitSVGPathElement(SVGPathElement pe);
+    public Map<String, String>  visitSVGGElement(SVGGElement svgGroup);
+    public Map<String, String>  visitSVGGElementClose(SVGGElement svgGroup);
 }

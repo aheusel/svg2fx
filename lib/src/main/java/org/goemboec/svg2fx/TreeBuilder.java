@@ -73,6 +73,8 @@ import org.w3c.dom.svg.SVGRectElement;
 import org.goemboec.svg2fx.interfaces.DocumentVisitor;
 import org.goemboec.svg2fx.interfaces.ElementVisitor;
 
+import java.util.Map;
+
 /**
  *
  * @author Alexander Heusel
@@ -140,51 +142,51 @@ public class TreeBuilder implements DocumentVisitor
     }
     
     @Override
-    public void visitSVGCircleElement(SVGCircleElement ce)
+    public Map<String, String> visitSVGCircleElement(SVGCircleElement ce)
     {
-        elementVisitor.visitSVGCircleElement(ce);
+        return elementVisitor.visitSVGCircleElement(ce);
     }
 
     @Override
-    public void visitSVGEllipseElement(SVGEllipseElement ee)
+    public Map<String, String> visitSVGEllipseElement(SVGEllipseElement ee)
     {
-        elementVisitor.visitSVGEllipseElement(ee);
+        return elementVisitor.visitSVGEllipseElement(ee);
     }
 
     @Override
-    public void visitSVGLineElement(SVGLineElement le)
+    public Map<String, String> visitSVGLineElement(SVGLineElement le)
     {
-        elementVisitor.visitSVGLineElement(le);
+        return elementVisitor.visitSVGLineElement(le);
     }
 
     @Override
-    public void visitSVGRectElement(SVGRectElement re)
+    public Map<String, String> visitSVGRectElement(SVGRectElement re)
     {
-        elementVisitor.visitSVGRectElement(re);
+        return elementVisitor.visitSVGRectElement(re);
     }
 
     @Override
-    public void visitSVGPolylineElement(SVGPolylineElement pe)
+    public Map<String, String> visitSVGPolylineElement(SVGPolylineElement pe)
     {
-        elementVisitor.visitSVGPolylineElement(pe);
+        return elementVisitor.visitSVGPolylineElement(pe);
     }
 
     @Override
-    public void visitSVGPathElement(SVGPathElement pe)
+    public Map<String, String> visitSVGPathElement(SVGPathElement pe)
     {
-        elementVisitor.visitSVGPathElement(pe);
+        return elementVisitor.visitSVGPathElement(pe);
     }
 
     @Override
-    public void visitSVGGElement(SVGGElement svgGroup)
+    public Map<String, String> visitSVGGElement(SVGGElement svgGroup)
     {
-        elementVisitor.visitSVGGElement(svgGroup);
+        return elementVisitor.visitSVGGElement(svgGroup);
     }
 
     @Override
-    public void visitSVGGElementClose(SVGGElement svgGroup)
+    public Map<String, String> visitSVGGElementClose(SVGGElement svgGroup)
     {
-        elementVisitor.visitSVGGElementClose(svgGroup);      
+        return elementVisitor.visitSVGGElementClose(svgGroup);
     }
     
     @Override

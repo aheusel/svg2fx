@@ -91,7 +91,7 @@ public class Tools
                         }
                         else
                         {
-                            currPair.values.add(new Double(parts[i]));
+                            currPair.values.add(Double.valueOf(parts[i]));
                         }
                 }
             }

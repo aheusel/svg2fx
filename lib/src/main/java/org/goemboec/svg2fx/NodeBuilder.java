@@ -40,6 +40,9 @@
 package org.goemboec.svg2fx;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+
 import javafx.scene.Group;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
@@ -59,6 +62,8 @@ import org.w3c.dom.svg.SVGPolylineElement;
 import org.w3c.dom.svg.SVGRectElement;
 import org.goemboec.svg2fx.interfaces.ElementVisitor;
 
+import static org.goemboec.svg2fx.util.AttributeHelper.getAttributes;
+
 /**
  *
  * @author Alexander Heusel
@@ -75,7 +80,7 @@ public class NodeBuilder implements ElementVisitor
     
     
     @Override
-    public void visitSVGCircleElement(SVGCircleElement ce)
+    public Map<String, String> visitSVGCircleElement(SVGCircleElement ce)
     {
         Circle circle = new Circle( ce.getCx().getBaseVal().getValue(),
                                     ce.getCy().getBaseVal().getValue(),
@@ -89,28 +94,33 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Circle] id: %s\n", ce.getId());
         parent.pushNode(circle);
+        return getAttributes(ce.getAttributes(), Set.of("id", "cx", "cy", "r", "transform"));
     }
 
     @Override
-    public void visitSVGEllipseElement(SVGEllipseElement ee)
+    public Map<String, String> visitSVGEllipseElement(SVGEllipseElement ee)
     {
         Ellipse ellipse = new Ellipse(  ee.getCx().getBaseVal().getValue(),
                                         ee.getCy().getBaseVal().getValue(),
                                         ee.getRx().getBaseVal().getValue(),
                                         ee.getRy().getBaseVal().getValue());
         ellipse.setId(ee.getId());
+
         String att = ee.getAttribute("transform");
         if(att != null)
         {
             ArrayList<Transform> tr = Tools.decodeSVGTransforms(att);
             ellipse.getTransforms().addAll(tr);
         }
+
         System.out.format("[Ellipse] id: %s\n", ee.getId());
         parent.pushNode(ellipse);
+
+        return getAttributes(ee.getAttributes(), Set.of("id", "cx", "cy", "rx", "ry", "transform"));
     }
 
     @Override
-    public void visitSVGLineElement(SVGLineElement le)
+    public Map<String, String> visitSVGLineElement(SVGLineElement le)
     {
         Line line = new Line(   le.getX1().getBaseVal().getValue(),
                                 le.getY1().getBaseVal().getValue(),
@@ -125,10 +135,11 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Line] id: %s\n", le.getId());
         parent.pushNode(line);
+        return getAttributes(le.getAttributes(), Set.of("id", "x1", "y1", "x2", "y2", "transform"));
     }
 
     @Override
-    public void visitSVGRectElement(SVGRectElement re)
+    public Map<String, String> visitSVGRectElement(SVGRectElement re)
     {
         Rectangle rect = new Rectangle( re.getX().getBaseVal().getValue(),
                                         re.getY().getBaseVal().getValue(),
@@ -144,10 +155,11 @@ public class NodeBuilder implements ElementVisitor
 
         System.out.format("[Rectangle] id: %s\n", re.getId());
         parent.pushNode(rect);
+        return getAttributes(re.getAttributes(), Set.of("id", "x", "y", "width", "height", "transform"));
     }
 
     @Override
-    public void visitSVGPolylineElement(SVGPolylineElement pe)
+    public Map<String, String> visitSVGPolylineElement(SVGPolylineElement pe)
     {
         Polyline polyline = new Polyline();
         SVGPointList pl = pe.getPoints();
@@ -166,10 +178,11 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Polyline] id: %s\n", pe.getId());
         parent.pushNode(polyline);
+        return getAttributes(pe.getAttributes(), Set.of("id", "points", "transform"));
     }
 
     @Override
-    public void visitSVGPathElement(SVGPathElement pe)
+    public Map<String, String> visitSVGPathElement(SVGPathElement pe)
     {
         Path path = new Path();
         path.setId(pe.getId());
@@ -182,13 +195,20 @@ public class NodeBuilder implements ElementVisitor
         
         System.out.format("[Path] id: %s\n", pe.getId());
         parent.pushNode(path);
+        return getAttributes(pe.getAttributes(), Set.of("id", "d", "transform"));
     }
 
     @Override
-    public void visitSVGGElement(SVGGElement svgGroup)
+    public Map<String, String> visitSVGGElement(SVGGElement svgGroup)
     {
+        Map<String, String> res = null;
         Group group = new Group();
-        if(svgGroup != null)
+        if(svgGroup == null)
+        {
+            System.out.println("[Group] id: root");
+            res = Map.of();
+        }
+        else
         {
             group.setId(svgGroup.getId());
             String att = svgGroup.getAttribute("transform");
@@ -197,19 +217,17 @@ public class NodeBuilder implements ElementVisitor
                 ArrayList<Transform> tr = Tools.decodeSVGTransforms(att);
                 group.getTransforms().addAll(tr);
             }
-            
+
             System.out.format("[Group] id: %s\n", svgGroup.getId());
-        }
-        else
-        {
-            System.out.println("[Group] id: root");
+            res = getAttributes(svgGroup.getAttributes(), Set.of("id", "transform"));
         }
         
         parent.pushNode(group);
+        return res;
     }
 
     @Override
-    public void visitSVGGElementClose(SVGGElement svgGroup)
+    public Map<String, String> visitSVGGElementClose(SVGGElement svgGroup)
     {
         if(svgGroup != null)
         {
@@ -220,6 +238,7 @@ public class NodeBuilder implements ElementVisitor
             System.out.println("[Close group] id: root");            
         }
         parent.closeGroup();
+        return null;
     }
     
 }

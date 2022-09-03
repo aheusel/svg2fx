@@ -41,6 +41,10 @@ package org.goemboec.svg2fx;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.batik.bridge.*;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.gvt.GraphicsNode;
@@ -51,6 +55,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.css.ViewCSS;
 import org.w3c.dom.svg.*;
+
+import static org.goemboec.svg2fx.util.AttributeHelper.chopCssStyleString;
 
 /**
  *
@@ -117,58 +123,60 @@ public class Document
         }
     }
     
-    private void visitGroup(DocumentVisitor db, SVGGElement group)
+    private Map<String, String> visitGroup(DocumentVisitor db, SVGGElement group)
     {
 
-        db.visitSVGGElement(group);
+        var res = db.visitSVGGElement(group);
         NodeList nl = group == null ? svgRoot.getChildNodes() : group.getChildNodes();
 
         for(int i = 0; i < nl.getLength(); i++)
         {
             if(nl.item(i) instanceof SVGGElement)
             {
-                visitGroup(db, (SVGGElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGGElement) nl.item(i)).getAttributeNode("style"));
+                var attr = visitGroup(db, (SVGGElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGGElement) nl.item(i)).getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGPathElement)
             {
-                visitPathSeg(db, (SVGPathElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGPathElement) nl.item(i)).getAttributeNode("style"));
+                var attr = visitPathSeg(db, (SVGPathElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGPathElement) nl.item(i)).getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGCircleElement)
             {
-                db.visitSVGCircleElement((SVGCircleElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGCircleElement) nl.item(i)).getAttributeNode("style"));
+                var attr = db.visitSVGCircleElement((SVGCircleElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGCircleElement) nl.item(i)).getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGEllipseElement)
             {
-                db.visitSVGEllipseElement((SVGEllipseElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGEllipseElement) nl.item(i)).getAttributeNode("style"));
+                var ellipse = (SVGEllipseElement) nl.item(i);
+                var attr = db.visitSVGEllipseElement(ellipse);
+                visitStyleAttributes(db, ellipse.getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGRectElement)
             {
-                db.visitSVGRectElement((SVGRectElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGRectElement) nl.item(i)).getAttributeNode("style"));
+                var attr = db.visitSVGRectElement((SVGRectElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGRectElement) nl.item(i)).getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGLineElement)
             {
-                db.visitSVGLineElement((SVGLineElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGLineElement) nl.item(i)).getAttributeNode("style"));
+                var attr = db.visitSVGLineElement((SVGLineElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGLineElement) nl.item(i)).getAttributeNode("style"), attr);
             }
             else if(nl.item(i) instanceof SVGPolylineElement)
             {
-                db.visitSVGPolylineElement((SVGPolylineElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGPolylineElement) nl.item(i)).getAttributeNode("style"));
+                var attr = db.visitSVGPolylineElement((SVGPolylineElement) nl.item(i));
+                visitStyleAttributes(db, ((SVGPolylineElement) nl.item(i)).getAttributeNode("style"), attr);
             }
         }
 
         db.visitSVGGElementClose(group);
-       
+
+        return res;
     }
     
-    private void visitPathSeg(DocumentVisitor db, SVGPathElement svgPath)
+    private Map<String, String> visitPathSeg(DocumentVisitor db, SVGPathElement svgPath)
     {
-        db.visitSVGPathElement(svgPath);
+        var res = db.visitSVGPathElement(svgPath);
         
 
         SVGPathSegList psl = svgPath.getPathSegList();
@@ -240,213 +248,214 @@ public class Document
                 default:
                     throw new java.lang.IllegalStateException("Unknown type of SVGPathSegm in SVGPathElement!");
             }    
-            
-            
         }
+
+        return res;
     }    
-    
-    private void visitStyleAttributes(StylePropertyVisitor db, Node el)
+
+
+
+    private void visitStyleAttributes(StylePropertyVisitor db, Node el, Map<String, String> attr)
     {
-        if(el != null)
+        // chop style attributes or return empty map if none.
+        var attrMap = el == null ?
+            Map.<String, String>of() :
+            chopCssStyleString(el.getNodeValue());
+
+        // Overwrite element attributes.
+        for(var key : attrMap.keySet())
         {
-            String[] parts = el.getNodeValue().split(";");
-            String[][] properties = new String[parts.length][];
-            for(int i = 0; i < parts.length; i++)
-            {
-                properties[i] = parts[i].split(":");
-                
-                // remove all whitespace and force lower case.
-                properties[i][0] = properties[i][0].trim().toLowerCase();
-                properties[i][1] = properties[i][1].trim().toLowerCase();
-            }
-            
-            for(int i = 0; i < properties.length; i++)
-            {
-                switch(properties[i][0])
-                {
-                    case "alignment-baseline":
-                        db.visitAlignmentBaseline(properties[i][1]);
-                        break;
-                    case "baseline-shift":
-                        db.visitClip(properties[i][1]);
-                        break;
-                    case "clip-path":
-                        db.visitClipPath(properties[i][1]);
-                        break;
-                    case "clip-rule":
-                        db.visitClipRule(properties[i][1]);
-                        break;
-                    case "clip":
-                        db.visitClip(properties[i][1]);
-                        break;
-                    case "color-interpolation-filters":
-                        db.visitColorInterpolationFilters(properties[i][1]);
-                        break;
-                    case "color-interpolation":
-                        db.visitColorInterpolation(properties[i][1]);
-                        break;
-                    case "color-profile":
-                        db.visitColorProfile(properties[i][1]);
-                        break;
-                    case "color-rendering":
-                        db.visitColorRendering(properties[i][1]);
-                        break;
-                    case "color":
-                        db.visitColor(properties[i][1]);
-                        break;
-                    case "cursor":
-                        db.visitCursor(properties[i][1]);
-                        break;
-                    case "direction":
-                        db.visitDirection(properties[i][1]);
-                        break;
-                    case "display":
-                        db.visitDisplay(properties[i][1]);
-                        break;
-                    case "dominant-baseline":
-                        db.visitDominantBaseline(properties[i][1]);
-                        break;
-                    case "enable-background":
-                        db.visitEnableBackground(properties[i][1]);
-                        break;
-                    case "fill-opacity":
-                        db.visitFillOpacity(properties[i][1]);
-                        break;
-                    case "fill-rule":
-                        db.visitFillRule(properties[i][1]);
-                        break;
-                    case "fill":
-                        db.visitFill(properties[i][1]);
-                        break;
-                    case "filter":
-                        db.visitFilter(properties[i][1]);
-                        break;
-                    case "flood-color":
-                        db.visitFloodColor(properties[i][1]);
-                        break;
-                    case "flood-opacity":
-                        db.visitFloodOpacity(properties[i][1]);
-                        break;
-                    case "font-family":
-                        db.visitFontFamily(properties[i][1]);
-                        break;
-                    case "font-size-adjust":
-                        db.visitFontSizeAdjust(properties[i][1]);
-                        break;
-                    case "font-size":
-                        db.visitFontSize(properties[i][1]);
-                        break;
-                    case "font-stretch":
-                        db.visitFontStretch(properties[i][1]);
-                        break;
-                    case "font-style":
-                        db.visitFontStyle(properties[i][1]);
-                        break;
-                    case "font-variant":
-                        db.visitFontVariant(properties[i][1]);
-                        break;
-                    case "font-weight":
-                        db.visitFontWeight(properties[i][1]);
-                        break;
-                    case "glyph-orientation-horizontal":
-                        db.visitGlyphOrientationHorizontal(properties[i][1]);
-                        break;
-                    case "glyph-orientation-vertical":
-                        db.visitGlyphOrientationVertical(properties[i][1]);
-                        break;
-                    case "image-rendering":
-                        db.visitImageRendering(properties[i][1]);
-                        break;
-                    case "kerning":
-                        db.visitKerning(properties[i][1]);
-                        break;
-                    case "letter-spacing":
-                        db.visitLetterSpacing(properties[i][1]);
-                        break;
-                    case "lighting-color":
-                        db.visitLightingColor(properties[i][1]);
-                        break;
-                    case "marker-end":
-                        db.visitMarkerEnd(properties[i][1]);
-                        break;
-                    case "marker-mid":
-                        db.visitMarkerMid(properties[i][1]);
-                        break;
-                    case "marker-start":
-                        db.visitMarkerStart(properties[i][1]);
-                        break;
-                    case "mask":
-                        db.visitMask(properties[i][1]);
-                        break;
-                    case "opacity":
-                        db.visitOpacity(properties[i][1]);
-                        break;
-                    case "overflow":
-                        db.visitOverflow(properties[i][1]);
-                        break;
-                    case "pointer-events":
-                        db.visitPointerEvents(properties[i][1]);
-                        break;
-                    case "shape-rendering":
-                        db.visitShapeRendering(properties[i][1]);
-                        break;
-                    case "stop-color":
-                        db.visitStopColor(properties[i][1]);
-                        break;
-                    case "stop-opacity":
-                        db.visitStopOpacity(properties[i][1]);
-                        break;
-                    case "stroke-dasharray":
-                        db.visitStrokeDasharray(properties[i][1]);
-                        break;
-                    case "stroke-dashoffset":
-                        db.visitStrokeDashoffset(properties[i][1]);
-                        break;
-                    case "stroke-linecap":
-                        db.visitStrokeLinecap(properties[i][1]);
-                        break;
-                    case "stroke-linejoin":
-                        db.visitStrokeLinejoin(properties[i][1]);
-                        break;
-                    case "stroke-miterlimit":
-                        db.visitStrokeMiterlimit(properties[i][1]);
-                        break;
-                    case "stroke-opacity":
-                        db.visitStrokeOpacity(properties[i][1]);
-                        break;
-                    case "stroke-width":
-                        db.visitStrokeWidth(properties[i][1]);
-                        break;
-                    case "stroke":
-                        db.visitStroke(properties[i][1]);
-                        break;
-                    case "text-anchor":
-                        db.visitTextAnchor(properties[i][1]);
-                        break;
-                    case "text-decoration":
-                        db.visitTextDecoration(properties[i][1]);
-                        break;
-                    case "text-rendering":
-                        db.visitTextRendering(properties[i][1]);
-                        break;
-                    case "unicode-bidi":
-                        db.visitUnicodeBidi(properties[i][1]);
-                        break;
-                    case "visibility":
-                        db.visitVisibility(properties[i][1]);
-                        break;
-                    case "word-spacing":
-                        db.visitWordSpacing(properties[i][1]);
-                        break;
-                    case "writing-mode":
-                        db.visitWritingMode(properties[i][1]);
-                        break;
-                    default:
-                        //System.out.format("Unsupported style property: %s ignored.\n", properties[i][0]);
-                }
-            }
-            
+            attr.put(key, attrMap.get(key));
         }
+
+        // Dispatch values.
+        for(var key : attrMap.keySet())
+        {
+            var value = attrMap.get(key);
+            switch(key)
+            {
+                case "alignment-baseline":
+                    db.visitAlignmentBaseline(value);
+                    break;
+                case "baseline-shift":
+                    db.visitClip(value);
+                    break;
+                case "clip-path":
+                    db.visitClipPath(value);
+                    break;
+                case "clip-rule":
+                    db.visitClipRule(value);
+                    break;
+                case "clip":
+                    db.visitClip(value);
+                    break;
+                case "color-interpolation-filters":
+                    db.visitColorInterpolationFilters(value);
+                    break;
+                case "color-interpolation":
+                    db.visitColorInterpolation(value);
+                    break;
+                case "color-profile":
+                    db.visitColorProfile(value);
+                    break;
+                case "color-rendering":
+                    db.visitColorRendering(value);
+                    break;
+                case "color":
+                    db.visitColor(value);
+                    break;
+                case "cursor":
+                    db.visitCursor(value);
+                    break;
+                case "direction":
+                    db.visitDirection(value);
+                    break;
+                case "display":
+                    db.visitDisplay(value);
+                    break;
+                case "dominant-baseline":
+                    db.visitDominantBaseline(value);
+                    break;
+                case "enable-background":
+                    db.visitEnableBackground(value);
+                    break;
+                case "fill-opacity":
+                    db.visitFillOpacity(value);
+                    break;
+                case "fill-rule":
+                    db.visitFillRule(value);
+                    break;
+                case "fill":
+                    db.visitFill(value);
+                    break;
+                case "filter":
+                    db.visitFilter(value);
+                    break;
+                case "flood-color":
+                    db.visitFloodColor(value);
+                    break;
+                case "flood-opacity":
+                    db.visitFloodOpacity(value);
+                    break;
+                case "font-family":
+                    db.visitFontFamily(value);
+                    break;
+                case "font-size-adjust":
+                    db.visitFontSizeAdjust(value);
+                    break;
+                case "font-size":
+                    db.visitFontSize(value);
+                    break;
+                case "font-stretch":
+                    db.visitFontStretch(value);
+                    break;
+                case "font-style":
+                    db.visitFontStyle(value);
+                    break;
+                case "font-variant":
+                    db.visitFontVariant(value);
+                    break;
+                case "font-weight":
+                    db.visitFontWeight(value);
+                    break;
+                case "glyph-orientation-horizontal":
+                    db.visitGlyphOrientationHorizontal(value);
+                    break;
+                case "glyph-orientation-vertical":
+                    db.visitGlyphOrientationVertical(value);
+                    break;
+                case "image-rendering":
+                    db.visitImageRendering(value);
+                    break;
+                case "kerning":
+                    db.visitKerning(value);
+                    break;
+                case "letter-spacing":
+                    db.visitLetterSpacing(value);
+                    break;
+                case "lighting-color":
+                    db.visitLightingColor(value);
+                    break;
+                case "marker-end":
+                    db.visitMarkerEnd(value);
+                    break;
+                case "marker-mid":
+                    db.visitMarkerMid(value);
+                    break;
+                case "marker-start":
+                    db.visitMarkerStart(value);
+                    break;
+                case "mask":
+                    db.visitMask(value);
+                    break;
+                case "opacity":
+                    db.visitOpacity(value);
+                    break;
+                case "overflow":
+                    db.visitOverflow(value);
+                    break;
+                case "pointer-events":
+                    db.visitPointerEvents(value);
+                    break;
+                case "shape-rendering":
+                    db.visitShapeRendering(value);
+                    break;
+                case "stop-color":
+                    db.visitStopColor(value);
+                    break;
+                case "stop-opacity":
+                    db.visitStopOpacity(value);
+                    break;
+                case "stroke-dasharray":
+                    db.visitStrokeDasharray(value);
+                    break;
+                case "stroke-dashoffset":
+                    db.visitStrokeDashoffset(value);
+                    break;
+                case "stroke-linecap":
+                    db.visitStrokeLinecap(value);
+                    break;
+                case "stroke-linejoin":
+                    db.visitStrokeLinejoin(value);
+                    break;
+                case "stroke-miterlimit":
+                    db.visitStrokeMiterlimit(value);
+                    break;
+                case "stroke-opacity":
+                    db.visitStrokeOpacity(value);
+                    break;
+                case "stroke-width":
+                    db.visitStrokeWidth(value);
+                    break;
+                case "stroke":
+                    db.visitStroke(value);
+                    break;
+                case "text-anchor":
+                    db.visitTextAnchor(value);
+                    break;
+                case "text-decoration":
+                    db.visitTextDecoration(value);
+                    break;
+                case "text-rendering":
+                    db.visitTextRendering(value);
+                    break;
+                case "unicode-bidi":
+                    db.visitUnicodeBidi(value);
+                    break;
+                case "visibility":
+                    db.visitVisibility(value);
+                    break;
+                case "word-spacing":
+                    db.visitWordSpacing(value);
+                    break;
+                case "writing-mode":
+                    db.visitWritingMode(value);
+                    break;
+                default:
+                    //System.out.format("Unsupported style property: %s ignored.\n", properties[i][0]);
+            }
+        }
+
     }
     
 }

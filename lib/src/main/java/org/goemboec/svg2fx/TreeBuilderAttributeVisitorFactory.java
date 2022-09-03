@@ -81,7 +81,7 @@ public class TreeBuilderAttributeVisitorFactory
         }
         else
         {
-            throw new java.lang.IllegalArgumentException("Unsupportet node type.");
+            throw new java.lang.IllegalArgumentException("Unsupported node type.");
         }        
     }
 }

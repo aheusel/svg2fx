@@ -138,6 +138,7 @@ public abstract class StylePropertyBuilder implements StylePropertyVisitor
     @Override
     public void visitFill(String value)
     {
+        System.out.println();
     }
 
     @Override

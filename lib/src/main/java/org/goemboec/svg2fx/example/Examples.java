@@ -1,21 +1,15 @@
-package org.goemboec.svg2fx.ui_rig;
+package org.goemboec.svg2fx.example;
 
-import javafx.application.Application;
 import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import org.goemboec.svg2fx.Document;
 import org.goemboec.svg2fx.TreeBuilder;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class App extends Application {
-
-    @Override
-    public void start(Stage stage) {
+public class Examples
+{
+    public static void main(String[] args) {
 
         Group group = null;
         try {
@@ -25,20 +19,10 @@ public class App extends Application {
         {
             System.out.println("foo");
         }
+        System.out.println("Done.");
 
 
-        String javaVersion = System.getProperty("java.version");
-        String javafxVersion = System.getProperty("javafx.version");
-        Label l = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
-        Scene scene = new Scene(group, 640, 480);
-        stage.setScene(scene);
-        stage.show();
     }
-
-    public static void main(String[] args) {
-        launch();
-    }
-
 
     public static Group createTree(String svg) throws IOException
     {
@@ -57,6 +41,7 @@ public class App extends Application {
         return group;
     }
 
+
     private final static String example1 = """
             <?xml version="1.0" encoding="UTF-8" standalone="no"?>
             <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320">
@@ -72,4 +57,6 @@ public class App extends Application {
               <ellipse cx="115.779" cy="155.778" rx="36" ry="60" fill="transparent" stroke="blue" style="fill:green"/>
             </svg>
             """;
+
+
 }
