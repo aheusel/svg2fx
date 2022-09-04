@@ -94,7 +94,7 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Circle] id: %s\n", ce.getId());
         parent.pushNode(circle);
-        return getAttributes(ce.getAttributes(), Set.of("id", "cx", "cy", "r", "transform"));
+        return getAttributes(ce.getAttributes(), Set.of("id", "style", "cx", "cy", "r", "transform"));
     }
 
     @Override
@@ -116,7 +116,9 @@ public class NodeBuilder implements ElementVisitor
         System.out.format("[Ellipse] id: %s\n", ee.getId());
         parent.pushNode(ellipse);
 
-        return getAttributes(ee.getAttributes(), Set.of("id", "cx", "cy", "rx", "ry", "transform"));
+        var bla = getAttributes(ee.getAttributes(), Set.of("id", "style", "cx", "cy", "rx", "ry", "transform"));
+
+        return bla;
     }
 
     @Override
@@ -135,7 +137,7 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Line] id: %s\n", le.getId());
         parent.pushNode(line);
-        return getAttributes(le.getAttributes(), Set.of("id", "x1", "y1", "x2", "y2", "transform"));
+        return getAttributes(le.getAttributes(), Set.of("id", "style", "x1", "y1", "x2", "y2", "transform"));
     }
 
     @Override
@@ -152,10 +154,9 @@ public class NodeBuilder implements ElementVisitor
             ArrayList<Transform> tr = Tools.decodeSVGTransforms(att);
             rect.getTransforms().addAll(tr);
         }
-
         System.out.format("[Rectangle] id: %s\n", re.getId());
         parent.pushNode(rect);
-        return getAttributes(re.getAttributes(), Set.of("id", "x", "y", "width", "height", "transform"));
+        return getAttributes(re.getAttributes(), Set.of("id", "style", "x", "y", "width", "height", "transform"));
     }
 
     @Override
@@ -178,7 +179,7 @@ public class NodeBuilder implements ElementVisitor
         }
         System.out.format("[Polyline] id: %s\n", pe.getId());
         parent.pushNode(polyline);
-        return getAttributes(pe.getAttributes(), Set.of("id", "points", "transform"));
+        return getAttributes(pe.getAttributes(), Set.of("id", "style", "points", "transform"));
     }
 
     @Override
@@ -195,7 +196,7 @@ public class NodeBuilder implements ElementVisitor
         
         System.out.format("[Path] id: %s\n", pe.getId());
         parent.pushNode(path);
-        return getAttributes(pe.getAttributes(), Set.of("id", "d", "transform"));
+        return getAttributes(pe.getAttributes(), Set.of("id", "style", "d", "transform"));
     }
 
     @Override
@@ -219,7 +220,7 @@ public class NodeBuilder implements ElementVisitor
             }
 
             System.out.format("[Group] id: %s\n", svgGroup.getId());
-            res = getAttributes(svgGroup.getAttributes(), Set.of("id", "transform"));
+            res = getAttributes(svgGroup.getAttributes(), Set.of("id", "style", "transform"));
         }
         
         parent.pushNode(group);

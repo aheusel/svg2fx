@@ -40,8 +40,15 @@
 package org.goemboec.svg2fx;
 
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Shape;
+
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.goemboec.svg2fx.util.AttributeHelper.*;
+import static org.goemboec.svg2fx.util.ColorHelper.*;
 
 /**
  *
@@ -53,31 +60,57 @@ public class ShapeStylePropertyBuilder extends StylePropertyBuilder
     {
         super(node, defs);
     }
-    
+
+    //url(#myGradient)
+    private final static Pattern urlPattern = Pattern.compile("url\\(#([^\\)\\s]+)\\)");
+
+    private double fillOpacity = -1.0;
+
     @Override
     public void visitFill(String value)
     {
-        String style = node.getStyle();
-        
-        if(!style.isEmpty())
+        var style = unpackCssString(node.getStyle());
+
+
+
+        var matcher = urlPattern.matcher(value);
+        if(matcher.find())
         {
-            style += ";";
+            var fill = (Paint)defs.getDefs().get(matcher.group(1).trim());
+            ((Shape)node).setFill(fill);
         }
-        
-        if(value.equals("none"))
+        else if(value.equals("none"))
         {
-            node.setStyle(style + " -fx-fill: null");
-        }
-        else if(value.startsWith("url"))
-        {
-            value = value.substring(value.indexOf("#") + 1);
-            value = value.substring(0, value.indexOf(")")).trim();
-            ((Shape)node).setFill((Paint)defs.getDefs().get(value));
+            style.put("-fx-fill", "null");
         }
         else
         {
-            node.setStyle(style + " -fx-fill: " + value);
+            if(fillOpacity > -1.0)
+            {
+                var color = colorToCssValue(colorWithOpacity(cssColorNameToColor(value), fillOpacity));
+                style.put("-fx-fill", color);
+            }
+            else
+            {
+                style.put("-fx-fill", value);
+            }
         }
+
+        node.setStyle(packCssString(style));
+    }
+
+    @Override
+    public void visitFillOpacity(String value)
+    {
+        var style = unpackCssString(node.getStyle());
+        fillOpacity = Double.valueOf(value);
+
+        if(style.keySet().contains("-fx-fill"))
+        {
+            var color = colorToCssValue(colorWithOpacity(cssColorNameToColor(style.get("-fx-fill")), fillOpacity));
+            style.put("-fx-fill", color);
+        }
+        node.setStyle(packCssString(style));
     }
     
     @Override

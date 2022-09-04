@@ -42,8 +42,6 @@ package org.goemboec.svg2fx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.batik.bridge.*;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
@@ -53,10 +51,11 @@ import org.goemboec.svg2fx.interfaces.DocumentVisitor;
 import org.goemboec.svg2fx.interfaces.StylePropertyVisitor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.ViewCSS;
 import org.w3c.dom.svg.*;
 
-import static org.goemboec.svg2fx.util.AttributeHelper.chopCssStyleString;
+import static org.goemboec.svg2fx.util.AttributeHelper.*;
 
 /**
  *
@@ -131,41 +130,40 @@ public class Document
 
         for(int i = 0; i < nl.getLength(); i++)
         {
-            if(nl.item(i) instanceof SVGGElement)
+            if(nl.item(i) instanceof SVGGElement g)
             {
-                var attr = visitGroup(db, (SVGGElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGGElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = visitGroup(db, g);
+                visitStyleAttributes(db, g.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGPathElement)
+            else if(nl.item(i) instanceof SVGPathElement path)
             {
-                var attr = visitPathSeg(db, (SVGPathElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGPathElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = visitPathSeg(db, path);
+                visitStyleAttributes(db, path.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGCircleElement)
+            else if(nl.item(i) instanceof SVGCircleElement circle)
             {
-                var attr = db.visitSVGCircleElement((SVGCircleElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGCircleElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = db.visitSVGCircleElement(circle);
+                visitStyleAttributes(db, circle.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGEllipseElement)
+            else if(nl.item(i) instanceof SVGEllipseElement ellipse)
             {
-                var ellipse = (SVGEllipseElement) nl.item(i);
                 var attr = db.visitSVGEllipseElement(ellipse);
-                visitStyleAttributes(db, ellipse.getAttributeNode("style"), attr);
+                visitStyleAttributes(db, ellipse.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGRectElement)
+            else if(nl.item(i) instanceof SVGRectElement rect)
             {
-                var attr = db.visitSVGRectElement((SVGRectElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGRectElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = db.visitSVGRectElement(rect);
+                visitStyleAttributes(db, rect.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGLineElement)
+            else if(nl.item(i) instanceof SVGLineElement line)
             {
-                var attr = db.visitSVGLineElement((SVGLineElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGLineElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = db.visitSVGLineElement(line);
+                visitStyleAttributes(db, line.getStyle(), attr);
             }
-            else if(nl.item(i) instanceof SVGPolylineElement)
+            else if(nl.item(i) instanceof SVGPolylineElement polyLine)
             {
-                var attr = db.visitSVGPolylineElement((SVGPolylineElement) nl.item(i));
-                visitStyleAttributes(db, ((SVGPolylineElement) nl.item(i)).getAttributeNode("style"), attr);
+                var attr = db.visitSVGPolylineElement(polyLine);
+                visitStyleAttributes(db, polyLine.getStyle(), attr);
             }
         }
 
@@ -255,23 +253,16 @@ public class Document
 
 
 
-    private void visitStyleAttributes(StylePropertyVisitor db, Node el, Map<String, String> attr)
+    private void visitStyleAttributes(StylePropertyVisitor db, CSSStyleDeclaration style, Map<String, String> attr)
     {
-        // chop style attributes or return empty map if none.
-        var attrMap = el == null ?
-            Map.<String, String>of() :
-            chopCssStyleString(el.getNodeValue());
 
-        // Overwrite element attributes.
-        for(var key : attrMap.keySet())
-        {
-            attr.put(key, attrMap.get(key));
-        }
+        var attributes = mergeWithCSS(attr, CSSStyleDeclarationToMap(style));
+
 
         // Dispatch values.
-        for(var key : attrMap.keySet())
+        for(var key : attributes.keySet())
         {
-            var value = attrMap.get(key);
+            var value = attributes.get(key);
             switch(key)
             {
                 case "alignment-baseline":

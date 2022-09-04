@@ -45,7 +45,7 @@ import javafx.scene.Node;
  *
  * @author Alexander Heusel
  */
-public class EllipseStylePropertyBuilder extends StylePropertyBuilder
+public class EllipseStylePropertyBuilder extends ShapeStylePropertyBuilder
 {
     public EllipseStylePropertyBuilder(Node node, DefsBuilder defs)
     {

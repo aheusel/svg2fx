@@ -53,8 +53,8 @@ public class Examples
                        L 315 10" stroke="black" fill="green" stroke-width="2" fill-opacity="0.5"/>
               <circle cx="150.71" cy="170.29" r="2" fill="red"/>
               <circle cx="110" cy="215" r="2" fill="red"/>
-              <ellipse cx="144.931" cy="229.512" rx="36" ry="60" fill="transparent" stroke="blue" style="fill:red"/>
-              <ellipse cx="115.779" cy="155.778" rx="36" ry="60" fill="transparent" stroke="blue" style="fill:green"/>
+              <ellipse cx="144.931" cy="229.512" rx="36" ry="60" fill="transparent" stroke="blue"/>
+              <ellipse cx="115.779" cy="155.778" rx="36" ry="60" fill="transparent" stroke="blue"/>
             </svg>
             """;
 
